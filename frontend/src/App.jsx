@@ -1,16 +1,19 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
+// Live Render API Base Endpoint
+const API_BASE_URL = 'https://sern-stack-app.onrender.com/api/users';
+
 function App() {
   const [users, setUsers] = useState([]);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(true);
 
-  // 1. Fetch users from Express API
+  // 1. Fetch users from deployed Express API
   const fetchUsers = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/users');
+      const res = await axios.get(API_BASE_URL);
       setUsers(res.data);
     } catch (err) {
       console.error('Failed to fetch users:', err);
@@ -29,7 +32,7 @@ function App() {
     if (!name || !email) return;
 
     try {
-      await axios.post('http://localhost:5000/api/users', { name, email });
+      await axios.post(API_BASE_URL, { name, email });
       setName('');
       setEmail('');
       fetchUsers(); // Refresh table automatically
@@ -67,7 +70,7 @@ function App() {
 
       {/* User Table */}
       {loading ? (
-        <p>Loading records from MySQL...</p>
+        <p>Loading records from Aiven MySQL...</p>
       ) : (
         <table border="1" cellPadding="10" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
           <thead>
@@ -84,7 +87,7 @@ function App() {
                 <td>{user.id}</td>
                 <td>{user.name}</td>
                 <td>{user.email}</td>
-                <td>{new Date(user.created_at).toLocaleString()}</td>
+                <td>{user.created_at ? new Date(user.created_at).toLocaleString() : 'N/A'}</td>
               </tr>
             ))}
           </tbody>
