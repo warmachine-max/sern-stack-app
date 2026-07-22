@@ -1,30 +1,32 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import pool from './config/db.js';
 import userRoutes from './routes/userRoutes.js';
 
 dotenv.config();
 
 const app = express();
+
+// 1. Global Middleware
 app.use(cors());
 app.use(express.json());
 
-// Routes
-app.use('/api/users', userRoutes);
-
-// DB Health Check Route
-app.get('/api/health', async (req, res) => {
-  try {
-    const [rows] = await pool.query('SELECT 1 + 1 AS result');
-    res.json({ message: 'Database connected successfully!', testResult: rows[0].result });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+// 2. Health Check Endpoint (useful for testing Render deployment)
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'OK', message: 'Backend is active and running' });
 });
 
-const PORT = process.env.PORT || 5000;
+// 3. Mount User API Routes
+app.use('/api/users', userRoutes);
 
+// 4. Global Error Handling Middleware
+app.use((err, req, res, next) => {
+  console.error('Unhandled Server Error:', err.stack);
+  res.status(500).json({ error: 'Internal Server Error' });
+});
+
+// 5. Port Configuration (Render uses process.env.PORT)
+const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`🚀 Server listening on port ${PORT}`);
 });
